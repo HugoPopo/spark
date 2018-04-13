@@ -18,15 +18,14 @@
 package org.apache.spark.scheduler
 
 import java.util.Properties
+
 import javax.annotation.Nullable
 
 import scala.collection.Map
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-
 import org.apache.spark.{SparkConf, TaskEndReason}
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.executor.{DummyMetrics, TaskMetrics}
 import org.apache.spark.scheduler.cluster.ExecutorInfo
 import org.apache.spark.storage.{BlockManagerId, BlockUpdatedInfo}
 import org.apache.spark.ui.SparkUI
@@ -164,7 +163,8 @@ case class SparkListenerBlockUpdated(blockUpdatedInfo: BlockUpdatedInfo) extends
 @DeveloperApi
 case class SparkListenerExecutorMetricsUpdate(
     execId: String,
-    accumUpdates: Seq[(Long, Int, Int, Seq[AccumulableInfo])])
+    accumUpdates: Seq[(Long, Int, Int, Seq[AccumulableInfo])],
+    dummyMetrics: Option[DummyMetrics])
   extends SparkListenerEvent
 
 @DeveloperApi

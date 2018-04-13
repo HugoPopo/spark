@@ -23,9 +23,8 @@ import java.util.function.Function
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
-
 import org.apache.spark._
-import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.executor.{DummyMetrics, TaskMetrics}
 import org.apache.spark.internal.Logging
 import org.apache.spark.scheduler._
 import org.apache.spark.status.api.v1
@@ -668,6 +667,11 @@ private[spark] class AppStatusListener(
           maybeUpdate(esummary, now)
         }
       }
+    }
+
+    event.dummyMetrics.foreach { d: DummyMetrics =>
+      // TODO: check
+      liveExecutors.get(event.execId).foreach { exec: LiveExecutor => maybeUpdate(exec, now) }
     }
   }
 

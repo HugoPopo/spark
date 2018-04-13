@@ -94,7 +94,8 @@ class JsonProtocolSuite extends SparkFunSuite {
         makeTaskMetrics(300L, 400L, 500L, 600L, 700, 800, hasHadoopInput = true, hasOutput = true)
           .accumulators().map(AccumulatorSuite.makeInfo)
           .zipWithIndex.map { case (a, i) => a.copy(id = i) }
-      SparkListenerExecutorMetricsUpdate("exec3", Seq((1L, 2, 3, accumUpdates)))
+      val dummyMetrics = Some(new DummyMetrics(100))
+      SparkListenerExecutorMetricsUpdate("exec3", Seq((1L, 2, 3, accumUpdates)), dummyMetrics)
     }
     val blockUpdated =
       SparkListenerBlockUpdated(BlockUpdatedInfo(BlockManagerId("Stars",
@@ -124,6 +125,7 @@ class JsonProtocolSuite extends SparkFunSuite {
     testEvent(nodeUnblacklisted, nodeUnblacklistedJsonString)
     testEvent(executorMetricsUpdate, executorMetricsUpdateJsonString)
     testEvent(blockUpdated, blockUpdatedJsonString)
+    /* TODO: test dummy metrics */
   }
 
   test("Dependent Classes") {

@@ -17,6 +17,7 @@
 
 package org.apache.spark.scheduler
 
+import org.apache.spark.executor.DummyMetrics
 import org.apache.spark.scheduler.SchedulingMode.SchedulingMode
 import org.apache.spark.storage.BlockManagerId
 import org.apache.spark.util.AccumulatorV2
@@ -75,7 +76,8 @@ private[spark] trait TaskScheduler {
   def executorHeartbeatReceived(
       execId: String,
       accumUpdates: Array[(Long, Seq[AccumulatorV2[_, _]])],
-      blockManagerId: BlockManagerId): Boolean
+      blockManagerId: BlockManagerId,
+      dummyMetrics: DummyMetrics): Boolean
 
   /**
    * Get an application ID associated with the job.

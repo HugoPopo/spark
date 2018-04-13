@@ -21,19 +21,18 @@ import java.util.{Properties, UUID}
 
 import scala.collection.JavaConverters._
 import scala.collection.Map
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.json4s.DefaultFormats
 import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
-
 import org.apache.spark._
 import org.apache.spark.executor._
 import org.apache.spark.rdd.RDDOperationScope
 import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.cluster.ExecutorInfo
+import org.apache.spark.status.api.v1.DummyInfo
 import org.apache.spark.storage._
 
 /**
@@ -236,6 +235,7 @@ private[spark] object JsonProtocol {
   def executorMetricsUpdateToJson(metricsUpdate: SparkListenerExecutorMetricsUpdate): JValue = {
     val execId = metricsUpdate.execId
     val accumUpdates = metricsUpdate.accumUpdates
+    val dummyMeasure = metricsUpdate.dummyMetrics
     ("Event" -> SPARK_LISTENER_EVENT_FORMATTED_CLASS_NAMES.metricsUpdate) ~
     ("Executor ID" -> execId) ~
     ("Metrics Updated" -> accumUpdates.map { case (taskId, stageId, stageAttemptId, updates) =>
@@ -243,7 +243,8 @@ private[spark] object JsonProtocol {
       ("Stage ID" -> stageId) ~
       ("Stage Attempt ID" -> stageAttemptId) ~
       ("Accumulator Updates" -> JArray(updates.map(accumulableInfoToJson).toList))
-    })
+    }) ~
+    ("Dummy measure" -> dummyMeasure.get.getValue)
   }
 
   def blockUpdateToJson(blockUpdate: SparkListenerBlockUpdated): JValue = {
@@ -506,6 +507,10 @@ private[spark] object JsonProtocol {
     ("Stack Trace" -> stackTraceToJson(exception.getStackTrace))
   }
 
+  def dummyMetricsToJson(dummyMetrics: DummyMetrics): JValue = {
+    "Dummy metrics" -> dummyMetrics.getValue
+  }
+
 
   /** --------------------------------------------------- *
    * JSON deserialization methods for SparkListenerEvents |
@@ -689,7 +694,11 @@ private[spark] object JsonProtocol {
         (json \ "Accumulator Updates").extract[List[JValue]].map(accumulableInfoFromJson)
       (taskId, stageId, stageAttemptId, updates)
     }
-    SparkListenerExecutorMetricsUpdate(execInfo, accumUpdates)
+    val dummyMetrics = jsonOption(json \ "Dummy Metrics") match {
+          case None => None
+          case Some(dummy) => Some(dummyMetricsFromJson(dummy))
+    }
+    SparkListenerExecutorMetricsUpdate(execInfo, accumUpdates, dummyMetrics)
   }
 
   def blockUpdateFromJson(json: JValue): SparkListenerBlockUpdated = {
@@ -1056,6 +1065,11 @@ private[spark] object JsonProtocol {
     val e = new Exception((json \ "Message").extract[String])
     e.setStackTrace(stackTraceFromJson(json \ "Stack Trace"))
     e
+  }
+
+  def dummyMetricsFromJson(json: JValue): DummyMetrics = {
+    val dummyValue = (json \ "Dummy Metrics").extract[Int]
+    new DummyMetrics(dummyValue)
   }
 
   /** Return an option that translates JNothing to None */

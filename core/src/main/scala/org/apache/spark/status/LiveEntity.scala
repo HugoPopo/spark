@@ -22,11 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import scala.collection.immutable.{HashSet, TreeSet}
 import scala.collection.mutable.HashMap
-
 import com.google.common.collect.Interners
-
 import org.apache.spark.JobExecutionStatus
-import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.executor.{DummyMetrics, TaskMetrics}
 import org.apache.spark.scheduler.{AccumulableInfo, StageInfo, TaskInfo}
 import org.apache.spark.status.api.v1
 import org.apache.spark.storage.RDDInfo
@@ -266,6 +264,9 @@ private class LiveExecutor(val executorId: String, _addTime: Long) extends LiveE
   var usedOnHeap = 0L
   var usedOffHeap = 0L
 
+  // Dummy metrics
+  var dummyMetrics = new DummyMetrics(scala.util.Random.nextInt(1000))
+
   def hasMemoryInfo: Boolean = totalOnHeap >= 0L
 
   def hostname: String = if (host != null) host else hostPort.split(":")(0)
@@ -302,7 +303,8 @@ private class LiveExecutor(val executorId: String, _addTime: Long) extends LiveE
       Option(removeReason),
       executorLogs,
       memoryMetrics,
-      blacklistedInStages)
+      blacklistedInStages,
+      dummyMetrics.getValue)
     new ExecutorSummaryWrapper(info)
   }
 

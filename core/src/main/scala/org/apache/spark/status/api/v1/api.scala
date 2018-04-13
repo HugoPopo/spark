@@ -98,7 +98,8 @@ class ExecutorSummary private[spark](
     val removeReason: Option[String],
     val executorLogs: Map[String, String],
     val memoryMetrics: Option[MemoryMetrics],
-    val blacklistedInStages: Set[Int])
+    val blacklistedInStages: Set[Int],
+    val dummyInfo: Int)
 
 class MemoryMetrics private[spark](
     val usedOnHeapStorageMemory: Long,
@@ -318,6 +319,9 @@ class RuntimeInfo private[spark](
     val javaVersion: String,
     val javaHome: String,
     val scalaVersion: String)
+
+class DummyInfo private[spark](
+    val dummyValue: Int)
 
 case class StackTrace(elems: Seq[String]) {
   override def toString: String = elems.mkString

@@ -29,7 +29,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito.{mock, spy, verify, when}
 import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 
-import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.executor.{DummyMetrics, TaskMetrics}
 import org.apache.spark.rpc.{RpcCallContext, RpcEndpoint, RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.cluster.CoarseGrainedClusterMessages._
@@ -77,7 +77,7 @@ class HeartbeatReceiverSuite
     heartbeatReceiverClock = new ManualClock
     heartbeatReceiver = new HeartbeatReceiver(sc, heartbeatReceiverClock)
     heartbeatReceiverRef = sc.env.rpcEnv.setupEndpoint("heartbeat", heartbeatReceiver)
-    when(scheduler.executorHeartbeatReceived(any(), any(), any())).thenReturn(true)
+    when(scheduler.executorHeartbeatReceived(any(), any(), any(), any())).thenReturn(true)
   }
 
   /**
@@ -213,8 +213,9 @@ class HeartbeatReceiverSuite
       executorShouldReregister: Boolean): Unit = {
     val metrics = TaskMetrics.empty
     val blockManagerId = BlockManagerId(executorId, "localhost", 12345)
+    val dummyMeasure = new DummyMetrics(100)
     val response = heartbeatReceiverRef.askSync[HeartbeatResponse](
-      Heartbeat(executorId, Array(1L -> metrics.accumulators()), blockManagerId))
+      Heartbeat(executorId, Array(1L -> metrics.accumulators()), blockManagerId, dummyMeasure))
     if (executorShouldReregister) {
       assert(response.reregisterBlockManager)
     } else {
@@ -223,7 +224,8 @@ class HeartbeatReceiverSuite
       verify(scheduler).executorHeartbeatReceived(
         Matchers.eq(executorId),
         Matchers.eq(Array(1L -> metrics.accumulators())),
-        Matchers.eq(blockManagerId))
+        Matchers.eq(blockManagerId),
+        Matchers.eq(dummyMeasure))
     }
   }
 
