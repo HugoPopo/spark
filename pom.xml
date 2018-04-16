@@ -2075,10 +2075,11 @@
               <arg>-feature</arg>
               <arg>-explaintypes</arg>
               <arg>-Yno-adapted-args</arg>
+              <arg>-language:reflectiveCalls</arg>
             </args>
             <jvmArgs>
-              <jvmArg>-Xms1024m</jvmArg>
-              <jvmArg>-Xmx1024m</jvmArg>
+              <jvmArg>-Xms2048m</jvmArg>
+              <jvmArg>-Xmx2048m</jvmArg>
               <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
             </jvmArgs>
             <javacArgs>

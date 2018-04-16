@@ -780,10 +780,7 @@ private[spark] class Executor(
       }
     }
 
-    val dummyMetrics = new DummyMetrics(scala.util.Random.nextInt(1000))
-
-    val message = Heartbeat(executorId, accumUpdates.toArray, env.blockManager.blockManagerId,
-      dummyMetrics)
+    val message = Heartbeat(executorId, accumUpdates.toArray, env.blockManager.blockManagerId)
     try {
       val response = heartbeatReceiverRef.askSync[HeartbeatResponse](
           message, RpcTimeout(conf, "spark.executor.heartbeatInterval", "10s"))

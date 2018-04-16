@@ -235,7 +235,6 @@ private[spark] object JsonProtocol {
   def executorMetricsUpdateToJson(metricsUpdate: SparkListenerExecutorMetricsUpdate): JValue = {
     val execId = metricsUpdate.execId
     val accumUpdates = metricsUpdate.accumUpdates
-    val dummyMeasure = metricsUpdate.dummyMetrics
     ("Event" -> SPARK_LISTENER_EVENT_FORMATTED_CLASS_NAMES.metricsUpdate) ~
     ("Executor ID" -> execId) ~
     ("Metrics Updated" -> accumUpdates.map { case (taskId, stageId, stageAttemptId, updates) =>
@@ -243,8 +242,7 @@ private[spark] object JsonProtocol {
       ("Stage ID" -> stageId) ~
       ("Stage Attempt ID" -> stageAttemptId) ~
       ("Accumulator Updates" -> JArray(updates.map(accumulableInfoToJson).toList))
-    }) ~
-    ("Dummy measure" -> dummyMeasure.get.getValue)
+    })
   }
 
   def blockUpdateToJson(blockUpdate: SparkListenerBlockUpdated): JValue = {
@@ -694,11 +692,8 @@ private[spark] object JsonProtocol {
         (json \ "Accumulator Updates").extract[List[JValue]].map(accumulableInfoFromJson)
       (taskId, stageId, stageAttemptId, updates)
     }
-    val dummyMetrics = jsonOption(json \ "Dummy Metrics") match {
-          case None => None
-          case Some(dummy) => Some(dummyMetricsFromJson(dummy))
-    }
-    SparkListenerExecutorMetricsUpdate(execInfo, accumUpdates, dummyMetrics)
+
+    SparkListenerExecutorMetricsUpdate(execInfo, accumUpdates)
   }
 
   def blockUpdateFromJson(json: JValue): SparkListenerBlockUpdated = {

@@ -22,12 +22,10 @@ import java.lang.{Integer => JInteger, Long => JLong}
 import java.util.{Arrays, Date, Properties}
 
 import scala.collection.JavaConverters._
-import scala.reflect.{classTag, ClassTag}
-
+import scala.reflect.{ClassTag, classTag}
 import org.scalatest.BeforeAndAfter
-
 import org.apache.spark._
-import org.apache.spark.executor.TaskMetrics
+import org.apache.spark.executor.{DummyMetrics, TaskMetrics}
 import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.cluster._
 import org.apache.spark.status.api.v1

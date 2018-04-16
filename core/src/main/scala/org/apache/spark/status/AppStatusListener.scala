@@ -668,11 +668,6 @@ private[spark] class AppStatusListener(
         }
       }
     }
-
-    event.dummyMetrics.foreach { d: DummyMetrics =>
-      // TODO: check
-      liveExecutors.get(event.execId).foreach { exec: LiveExecutor => maybeUpdate(exec, now) }
-    }
   }
 
   override def onBlockUpdated(event: SparkListenerBlockUpdated): Unit = {

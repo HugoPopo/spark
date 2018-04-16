@@ -264,9 +264,6 @@ private class LiveExecutor(val executorId: String, _addTime: Long) extends LiveE
   var usedOnHeap = 0L
   var usedOffHeap = 0L
 
-  // Dummy metrics
-  var dummyMetrics = new DummyMetrics(scala.util.Random.nextInt(1000))
-
   def hasMemoryInfo: Boolean = totalOnHeap >= 0L
 
   def hostname: String = if (host != null) host else hostPort.split(":")(0)
@@ -303,8 +300,7 @@ private class LiveExecutor(val executorId: String, _addTime: Long) extends LiveE
       Option(removeReason),
       executorLogs,
       memoryMetrics,
-      blacklistedInStages,
-      dummyMetrics.getValue)
+      blacklistedInStages)
     new ExecutorSummaryWrapper(info)
   }
 
