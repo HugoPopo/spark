@@ -185,6 +185,12 @@ case class SparkListenerApplicationEnd(time: Long) extends SparkListenerEvent
 case class SparkListenerLogStart(sparkVersion: String) extends SparkListenerEvent
 
 /**
+ * A dummy event for test
+ */
+@DeveloperApi
+case class SparkListenerDummyEvent(value: Int) extends SparkListenerEvent
+
+/**
  * Interface for listening to events from the Spark scheduler. Most applications should probably
  * extend SparkListener or SparkFirehoseListener directly, rather than implementing this class.
  *
@@ -318,6 +324,11 @@ private[spark] trait SparkListenerInterface {
    * Called when other events like SQL-specific events are posted.
    */
   def onOtherEvent(event: SparkListenerEvent): Unit
+
+  /**
+   * Called on a dummy event
+   */
+  def onDummyEvent(event: SparkListenerDummyEvent): Unit
 }
 
 
@@ -388,4 +399,6 @@ abstract class SparkListener extends SparkListenerInterface {
       speculativeTask: SparkListenerSpeculativeTaskSubmitted): Unit = { }
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = { }
+
+  override def onDummyEvent(dummyEvent: SparkListenerDummyEvent): Unit = { }
 }
